@@ -1839,7 +1839,6 @@ dependencies = [
  "image",
  "log",
  "serde",
- "wasm-bindgen-futures",
 ]
 
 [[package]]
