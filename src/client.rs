@@ -1,10 +1,15 @@
-use crate::common::{clock::Clock, game_modes::GameType, logic::GameState};
+use crate::common::{
+    clock::Clock,
+    game_modes::{GameMode, GameType},
+    logic::{ChessPosition, GameState},
+};
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct GameClient {
-    game_state: GameState,
-    game_type: Option<GameType>,
+    pub game_state: GameState,
+    pub game_type: Option<GameType>,
     has_started: bool,
-    clock: Clock,
+    pub clock: Clock,
+    pub game_mode: Option<GameMode>,
 }
 
 impl Default for GameClient {
@@ -14,6 +19,7 @@ impl Default for GameClient {
             game_type: None,
             has_started: false,
             clock: Clock::default(),
+            game_mode: None,
         }
     }
 }
@@ -24,6 +30,18 @@ impl GameClient {
             game_type: Some(game_type),
             has_started: true,
             clock: Clock::from_game_type(game_type),
+            game_mode: Some(GameMode::Local),
         }
+    }
+    pub fn update_fen(&mut self, fen: &str) -> Option<()> {
+        self.game_state = GameState::from_fen(fen)?;
+        Some(())
+    }
+    pub fn possible_moves(&self, pos: &ChessPosition) -> Vec<ChessPosition> {
+        self.game_state
+            .generate_legal_moves_for_pos(pos)
+            .iter()
+            .map(|m| m.to_pos)
+            .collect()
     }
 }

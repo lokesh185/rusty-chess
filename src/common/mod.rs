@@ -1,4 +1,5 @@
 pub mod clock;
-pub mod fen;
+mod fen;
 pub mod game_modes;
 pub mod logic;
+pub mod move_history;

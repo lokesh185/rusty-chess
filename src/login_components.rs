@@ -1,18 +1,8 @@
+use eframe::App;
+
 use crate::app::ChessGame;
 use crate::common::game_modes::GameType;
 pub fn local(chess_game: &mut ChessGame, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-    // ui.horizontal(|ui| {
-    //     ui.spacing_mut().item_spacing.x = 0.0;
-    //     ui.label("Powered by ");
-    //     ui.hyperlink_to("egui", "https://github.com/emilk/egui");
-    //     ui.label(" and ");
-    //     ui.hyperlink_to(
-    //         "eframe",
-    //         "https://github.com/emilk/egui/tree/master/crates/eframe",
-    //     );
-    //     ui.label(".");
-    // });
-    // left side panel with different times
     egui::SidePanel::left("local_options").show(ctx, |ui| {
         ui.heading("Local Game Options");
         ui.label("Time Control");
@@ -35,7 +25,10 @@ pub fn local(chess_game: &mut ChessGame, ctx: &egui::Context, _frame: &mut efram
             .on_hover_text("Start a local game")
             .clicked()
         {
-            self.game
+            chess_game.start_local_game();
+            if !chess_game.local_fen_string.is_empty() {
+                chess_game.client.update_fen(&chess_game.local_fen_string);
+            }
         };
     });
 }

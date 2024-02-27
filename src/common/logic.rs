@@ -39,6 +39,17 @@ pub struct ChessMove {
     pub from_pos: ChessPosition,
     pub to_pos: ChessPosition,
 }
+impl ToString for ChessMove {
+    fn to_string(&self) -> String {
+        format!(
+            "from {} {} to {} {}",
+            (self.from_pos.file),
+            (self.from_pos.rank),
+            (self.to_pos.file),
+            (self.to_pos.rank),
+        )
+    }
+}
 impl ChessMove {
     pub fn new(from_pos: ChessPosition, to_pos: ChessPosition) -> ChessMove {
         Self { from_pos, to_pos }
@@ -94,6 +105,21 @@ impl ChessPosition {
     }
     pub fn as_tuple(&self) -> (i32, i32) {
         (self.file, self.rank)
+    }
+    pub fn iter() -> impl Iterator<Item = ChessPosition> {
+        (0..8).flat_map(move |file| (0..8).map(move |rank| ChessPosition { file, rank }))
+    }
+    pub fn to_flipped(self) -> Self {
+        Self {
+            file: self.file,
+            rank: 7 - self.rank,
+        }
+    }
+    pub fn adjust_for_current_player(self, player_kind: PlayerType) -> Self {
+        match player_kind {
+            PlayerType::Black => self,
+            PlayerType::White => self.to_flipped(),
+        }
     }
 }
 #[derive(Clone, Serialize, Deserialize)]
@@ -389,11 +415,11 @@ impl GameState {
         player_kind: &PlayerType,
     ) -> Option<ChessPosition> {
         let new_pos = loc.add_offset(offset)?;
-        if (self.board.get_piece_at_pos(&new_pos).is_none()
+        if self.board.get_piece_at_pos(&new_pos).is_none()
             || self
                 .board
                 .get_piece_at_pos(&new_pos)
-                .is_some_and(|x| (x.player_kind != *player_kind)))
+                .is_some_and(|x| (x.player_kind != *player_kind))
         {
             Some(new_pos)
         } else {
@@ -468,7 +494,7 @@ impl GameState {
                     _ => {}
                 }
                 self.board.perform_move(chess_move);
-
+                self.prev_moves.push(*chess_move);
                 if is_castle {
                     if chess_move.to_pos.file == 1 {
                         self.board.perform_move(&ChessMove::new(
