@@ -37,11 +37,11 @@ impl GameClient {
         self.game_state = GameState::from_fen(fen)?;
         Some(())
     }
-    pub fn possible_moves(&self, pos: &ChessPosition) -> Vec<ChessPosition> {
+    pub fn possible_move_ends(&self, pos: &ChessPosition) -> Vec<ChessPosition> {
         self.game_state
             .generate_legal_moves_for_pos(pos)
             .iter()
-            .map(|m| m.to_pos)
+            .map(|m| m.move_vector.to_pos)
             .collect()
     }
 }

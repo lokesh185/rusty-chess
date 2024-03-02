@@ -27,6 +27,6 @@ opt-level = 2 # fast and small wasm
 [profile.dev.package."*"]
 opt-level = 2
 
-[[bin]]
-name = "client"
-path = "src/main.rs"
+# [[bin]]
+# name = "client"
+# path = "src/main.rs"

@@ -1,4 +1,4 @@
-use super::logic::{ChessPosition, Piece, PlayerType};
+use super::logic::{ChessPosition, Piece, PieceType, PlayerType};
 
 use serde::{Deserialize, Serialize};
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -16,32 +16,42 @@ impl ToString for ChessMoveVector {
         "todo".to_string()
     }
 }
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-enum ChessMove {
-    Castle(CastleType),
-    Promotion(Promotion),
-    Normal,
-    EnPassant(ChessPosition),
-}
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-enum CastleType {
-    Short(PlayerType),
-    Long(PlayerType),
-}
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-struct Promotion {
-    move_vector: ChessMoveVector,
-    promoted_to: Piece,
-}
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-struct NormalMove {
-    piece: Piece,
-    move_vector: ChessMoveVector,
-}
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-struct EnPassant {
-    move_vector: ChessMoveVector,
-    taken_pawn_position: ChessPosition,
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ChessMove {
+    pub move_kind: ChessMoveKind,
+    pub move_vector: ChessMoveVector,
+    pub moved_piece: Piece,
 }
 
+impl ChessMove {
+    pub fn new(move_kind: ChessMoveKind, move_vector: ChessMoveVector, moved_piece: Piece) -> Self {
+        Self {
+            move_kind,
+            move_vector,
+            moved_piece,
+        }
+    }
+}
+impl ToString for ChessMove {
+    fn to_string(&self) -> String {
+        "todo".to_string()
+    }
+}
+
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ChessMoveKind {
+    Castle(CastleType),
+    Promotion(PieceType),
+    Normal,
+    /// piece type of the taken piece
+    Take(PieceType),
+    /// postion of the taken pawn
+    EnPassant(ChessPosition),
+}
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum CastleType {
+    Short,
+    Long,
+}
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MoveHistory {}

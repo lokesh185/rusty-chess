@@ -2,6 +2,7 @@ use crate::common::game_modes::{GameMode, GameType};
 use crate::common::logic::ChessPosition;
 use crate::images::PieceImages;
 use crate::{client::GameClient, game_components, login_components};
+use eframe::glow::NONE;
 use egui::{Color32, Pos2};
 use egui_extras::install_image_loaders;
 
@@ -27,6 +28,8 @@ pub struct ChessGame {
     pub mouse_pos: Option<Pos2>,
     pub pos_held: Option<ChessPosition>,
     pub tile_width: f32,
+    pub window_open: bool,
+    pub result_text: String,
 }
 impl PartialEq for ChessGame {
     fn eq(&self, other: &Self) -> bool {
@@ -71,6 +74,8 @@ impl Default for ChessGame {
             color_white: LIGHT,
             pos_held: None,
             tile_width: 100.0,
+            window_open: false,
+            result_text: String::default(),
         }
     }
 }
@@ -91,13 +96,19 @@ impl ChessGame {
 }
 
 impl eframe::App for ChessGame {
-    /// Called by the frame work to save state before shutdown.
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
         eframe::set_value(storage, eframe::APP_KEY, self);
     }
 
-    /// Called each time the UI needs repainting, which may be many times per second.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        if self.window_open {
+            egui::Window::new("Modal Window")
+                .open(&mut self.window_open)
+                .show(ctx, |ui| {
+                    ui.label(&self.result_text);
+                });
+        }
+
         if self
             .client
             .game_mode
@@ -111,19 +122,19 @@ impl eframe::App for ChessGame {
         egui::TopBottomPanel::top("top_menu_panel").show(ctx, |ui| {
             // The top panel is often a good place for a menu bar:
             egui::menu::bar(ui, |ui| {
-                // NOTE: no File->Quit on web pages!
-                let is_web = cfg!(target_arch = "wasm32");
-                if !is_web {
-                    ui.menu_button("File", |ui| {
-                        if ui.button("Quit").clicked() {
-                            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
-                        }
-                    });
-                    ui.add_space(16.0);
-                }
+                ui.menu_button("Option bar", |ui| {
+                    if ui.button("Quit").clicked() {
+                        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                    }
+                });
+                ui.add_space(16.0);
 
                 egui::widgets::global_dark_light_mode_buttons(ui);
                 egui::reset_button(ui, self);
+                ui.color_edit_button_srgba(&mut self.color_black)
+                    .on_hover_text("dark color");
+                ui.color_edit_button_srgba(&mut self.color_white)
+                    .on_hover_text("light color");
             });
         });
 

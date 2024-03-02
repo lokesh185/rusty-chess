@@ -1,5 +1,6 @@
 use crate::app::ChessGame;
-use crate::common::logic::{ChessMove, ChessPosition};
+use crate::common::logic::{ChessPosition, MoveResult};
+use crate::common::move_history::ChessMove;
 use egui::Vec2;
 use egui::{Pos2, Rect};
 
@@ -74,16 +75,29 @@ fn chess_board(chess_game: &mut ChessGame, ui: &mut egui::Ui, ctx: &egui::Contex
         if let (Some(from_pos), Some(to_pos)) = (chess_game.pos_held.clone(), cur_chess_pos) {
             chess_game.pos_held = None;
 
-            chess_game
-                .client
-                .game_state
-                .make_move(&ChessMove::new(from_pos, to_pos))
+            if let Some(chess_move) = chess_game.client.game_state.make_move(&from_pos, &to_pos) {
+                Some(chess_game.client.game_state.do_move(&chess_move))
+            } else {
+                None
+            }
         } else {
             None
         }
     } else {
         None
     };
+    if let Some(some_result) = move_result {
+        dbg!(some_result);
+        chess_game.window_open = true;
+        chess_game.result_text = match some_result {
+            MoveResult::GameEnd(t) => t.to_string(),
+            MoveResult::InvalidMove => "noooooo".to_string(),
+            MoveResult::Normal => {
+                chess_game.window_open = false;
+                "".to_string()
+            }
+        };
+    }
 
     paint_board(chess_game, ui, start_pos, tile_side);
 }
@@ -101,7 +115,7 @@ fn paint_board(chess_game: &mut ChessGame, ui: &mut egui::Ui, start: Pos2, tile_
             .board
             .get_piece_at_pos(&piece_pos)
         {
-            red_squares.append(&mut chess_game.client.possible_moves(&piece_pos));
+            red_squares.append(&mut chess_game.client.possible_move_ends(&piece_pos));
             o_piece = Some(piece);
             o_piece_pos = Some(piece_pos);
         }
